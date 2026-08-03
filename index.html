@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kritik & Saran - Llowye Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Fredoka', 'Segoe UI', sans-serif;
+    background:#FFF6D6;
+    color:#000000;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:30px 16px;
+  }
+  h1{
+    font-size:22px; margin-bottom:6px; text-align:center; color:#000000;
+  }
+  .subtitle{
+    font-size:13px; color:#4A4A4A; text-align:center; margin-bottom:22px;
+  }
+  .card{
+    background:#FFFDF5;
+    border:1px solid #EFE3A8;
+    border-radius:16px;
+    padding:22px;
+    width:100%; max-width:400px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+  }
+  label{
+    display:block; font-size:13px; font-weight:500; color:#000000;
+    margin-bottom:6px; margin-top:14px;
+  }
+  label:first-of-type{margin-top:0;}
+  input, textarea{
+    width:100%; padding:10px 12px; font-size:14px;
+    border:1px solid #E0D48A; border-radius:10px;
+    background:#FFFFFF; color:#000000;
+    font-family:'Fredoka', 'Segoe UI', sans-serif;
+    resize:vertical;
+  }
+  textarea{min-height:110px;}
+
+  .rating{
+    display:flex; gap:6px; margin-top:6px;
+  }
+  .rating span{
+    font-size:26px; cursor:pointer; filter:grayscale(1) opacity(0.5);
+    transition:.15s;
+  }
+  .rating span.active{
+    filter:none; opacity:1;
+  }
+
+  button{
+    width:100%; margin-top:20px; padding:12px;
+    background:#000000; color:#FFF6D6;
+    font-weight:500; font-size:15px;
+    border:none; border-radius:999px; cursor:pointer;
+    font-family:'Fredoka', 'Segoe UI', sans-serif;
+  }
+  button:active{transform:scale(0.97);}
+
+  .note{
+    margin-top:14px; font-size:11.5px; color:#726F5B; text-align:center;
+  }
+  footer{
+    margin-top:24px; font-size:12px; color:#000000; text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<h1>💌 Kritik & Saran</h1>
+<div class="subtitle">Suara kamu penting banget buat Llowye Shop jadi lebih baik!</div>
+
+<div class="card">
+  <label for="nama">Nama (opsional)</label>
+  <input type="text" id="nama" placeholder="Boleh nama/username kamu">
+
+  <label>Kasih rating dong</label>
+  <div class="rating" id="ratingBox">
+    <span data-v="1">⭐</span>
+    <span data-v="2">⭐</span>
+    <span data-v="3">⭐</span>
+    <span data-v="4">⭐</span>
+    <span data-v="5">⭐</span>
+  </div>
+
+  <label for="pesan">Kritik & Saran</label>
+  <textarea id="pesan" placeholder="Tulis kritik, saran, atau masukan buat toko kami di sini..."></textarea>
+
+  <button onclick="kirimSaran()">Kirim</button>
+
+  <div class="note">Kritik/saran kamu bakal dikirim langsung ke WhatsApp admin Llowye Shop</div>
+</div>
+
+<footer>
+  © 2026 Llowye Shop
+</footer>
+
+<script>
+const WA_NUMBER = "628991740111";
+let selectedRating = 0;
+
+document.querySelectorAll('#ratingBox span').forEach(star => {
+  star.addEventListener('click', () => {
+    selectedRating = parseInt(star.dataset.v);
+    document.querySelectorAll('#ratingBox span').forEach(s => {
+      s.classList.toggle('active', parseInt(s.dataset.v) <= selectedRating);
+    });
+  });
+});
+
+function kirimSaran(){
+  const nama = document.getElementById('nama').value.trim() || "Anonim";
+  const pesan = document.getElementById('pesan').value.trim();
+
+  if(pesan === ""){
+    alert("Kritik/saran nya belum diisi nih 🥺");
+    return;
+  }
+
+  const bintang = selectedRating > 0 ? "⭐".repeat(selectedRating) : "(belum kasih rating)";
+
+  const teks =
+    `Halo Nek Llowye, aku mau kasih kritik & saran nih:\n\n` +
+    `Nama: ${nama}\n` +
+    `Rating: ${bintang}\n` +
+    `Pesan: ${pesan}`;
+
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(teks)}`;
+  window.open(url, '_blank');
+}
+</script>
+
+</body>
+</html>
