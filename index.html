@@ -17,6 +17,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -301,6 +302,34 @@
   .admin-item .waktu{font-size:11px;color:#3F5C3A;}
   .admin-item .bintang{font-size:12px;margin-bottom:6px;color:#2E9E3F;}
   .admin-item .pesan{font-size:13px;color:#1B2E17;line-height:1.5;}
+  .balasan{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed #B7E8AC;
+  }
+  .balasan .label{
+    font-size:11px;
+    font-weight:500;
+    color:#3F5C3A;
+    margin-bottom:4px;
+  }
+  .balasan .isi{
+    font-size:13px;
+    color:#1B2E17;
+    line-height:1.5;
+  }
+  .balasan textarea{
+    min-height:60px;
+    font-size:13px;
+    margin-bottom:6px;
+  }
+  .balasan .kirimBalasan{
+    width:auto;
+    display:inline-flex;
+    padding:7px 14px;
+    font-size:12.5px;
+    margin-top:0;
+  }
   .admin-empty{
     text-align:center;
     font-size:13px;
@@ -392,6 +421,10 @@
 </div>
 
 <script>
+const SUPABASE_URL = 'https://afsqlxxkllewgumadjkn.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_HtgRECbeXHIcnUf5B6JyDA_21UdXF3U';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 let selectedRating = 0;
 document.querySelectorAll('#stars span').forEach(star => {
   star.addEventListener('click', () => {
@@ -428,18 +461,12 @@ async function kirim(){
   }
   err.classList.remove('show');
 
-  const entry = {
-    nama,
-    rating: selectedRating,
-    pesan,
-    waktu: new Date().toISOString()
-  };
-
-  const key = 'saran:' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
-
   try{
-    const result = await window.storage.set(key, JSON.stringify(entry), true);
-    if(!result){
+    const { error } = await supabaseClient
+      .from('saran')
+      .insert([{ nama, rating: selectedRating, pesan }]);
+
+    if(error){
       alert('Gagal menyimpan, coba lagi ya.');
       return;
     }
@@ -493,34 +520,57 @@ async function muatAdmin(){
   admin.innerHTML = '<div class="admin-empty">memuat...</div>';
 
   try{
-    const list = await window.storage.list('saran:', true);
-    const keys = (list && list.keys) ? list.keys : [];
-    if(keys.length === 0){
+    const { data, error } = await supabaseClient
+      .from('saran')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      admin.innerHTML = '<div class="admin-empty">gagal memuat masukan</div>';
+      return;
+    }
+    if(!data || data.length === 0){
       admin.innerHTML = '<div class="admin-empty">belum ada masukan yang masuk</div>';
       return;
     }
-    const entries = [];
-    for(const k of keys){
-      try{
-        const r = await window.storage.get(k, true);
-        if(r && r.value){
-          entries.push(JSON.parse(r.value));
-        }
-      }catch(e){}
-    }
-    entries.sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
 
-    admin.innerHTML = entries.map(en => {
+    admin.innerHTML = data.map(en => {
       const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : 'belum kasih rating';
-      const tgl = new Date(en.waktu).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+      const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+      const balasanHtml = en.balasan
+        ? '<div class="balasan"><div class="label">Balasan toko</div><div class="isi">' + escapeHtml(en.balasan) + '</div></div>'
+        : '<div class="balasan"><div class="label">Balas pesan ini</div><textarea id="balasInput-' + en.id + '" placeholder="Tulis balasan buat pesan ini..."></textarea><button class="kirimBalasan" onclick="kirimBalasan(\'' + en.id + '\')">Kirim balasan</button></div>';
       return '<div class="admin-item">' +
         '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
         '<div class="bintang">' + bintang + '</div>' +
         '<div class="pesan">' + escapeHtml(en.pesan) + '</div>' +
+        balasanHtml +
       '</div>';
     }).join('');
   }catch(e){
     admin.innerHTML = '<div class="admin-empty">gagal memuat masukan</div>';
+  }
+}
+
+async function kirimBalasan(id){
+  const input = document.getElementById('balasInput-' + id);
+  const teks = input.value.trim();
+  if(teks === ''){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('saran')
+      .update({ balasan: teks })
+      .eq('id', id);
+
+    if(error){
+      alert('Gagal kirim balasan, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal kirim balasan, coba lagi ya.');
   }
 }
 
