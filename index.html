@@ -2,138 +2,521 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kritik & Saran - Llowye Shop</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kotak Pos - Llowye Shop</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
-  *{box-sizing:border-box; margin:0; padding:0;}
+  *{margin:0;padding:0;box-sizing:border-box;}
   body{
-    font-family:'Fredoka', 'Segoe UI', sans-serif;
-    background:#FFF6D6;
-    color:#000000;
+    font-family:'Inter',sans-serif;
+    background:#0A0A0A;
+    color:#FFFFFF;
     min-height:100vh;
-    display:flex; flex-direction:column; align-items:center;
-    padding:30px 16px;
+    display:flex;
+    justify-content:center;
+    padding:48px 20px 80px;
+  }
+  .wrap{width:100%;max-width:400px;}
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:2px;
+    color:#9CE8A0;
+    text-transform:uppercase;
+    text-align:center;
+    margin-bottom:14px;
+    font-weight:500;
   }
   h1{
-    font-size:22px; margin-bottom:6px; text-align:center; color:#000000;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:26px;
+    font-weight:700;
+    text-align:center;
+    margin-bottom:8px;
+    color:#FFFFFF;
   }
   .subtitle{
-    font-size:13px; color:#4A4A4A; text-align:center; margin-bottom:22px;
+    font-size:13px;
+    color:#B8B8B8;
+    text-align:center;
+    margin-bottom:30px;
+    line-height:1.5;
   }
-  .card{
-    background:#FFFDF5;
-    border:1px solid #EFE3A8;
-    border-radius:16px;
-    padding:22px;
-    width:100%; max-width:400px;
-    box-shadow:0 4px 14px rgba(0,0,0,0.08);
+
+  .postcard{
+    position:relative;
+    background:#DFF6D8;
+    border:2px dashed #4FAE55;
+    border-radius:14px;
+    padding:26px 24px 24px;
+    box-shadow:0 10px 26px rgba(0,0,0,0.45);
   }
+
+  .envCopyright{
+    position:absolute;
+    bottom:12px;
+    left:18px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:10.5px;
+    color:#3F5C3A;
+  }
+  .envCopyright svg{width:14px;height:14px;stroke:#3F5C3A;fill:none;stroke-width:2;}
+
+  .stamp{
+    position:absolute;
+    top:-14px;
+    right:22px;
+    width:52px;
+    height:64px;
+    background:#0A0A0A;
+    border:2px dashed #9CE8A0;
+    border-radius:3px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform:rotate(4deg);
+  }
+  .stamp svg{width:24px;height:24px;stroke:#9CE8A0;fill:none;stroke-width:1.8;}
+
+  .field{margin-bottom:18px;}
+  .field:last-of-type{margin-bottom:0;}
   label{
-    display:block; font-size:13px; font-weight:500; color:#000000;
-    margin-bottom:6px; margin-top:14px;
+    display:block;
+    font-size:12.5px;
+    font-weight:500;
+    color:#1B3A17;
+    margin-bottom:7px;
   }
-  label:first-of-type{margin-top:0;}
   input, textarea{
-    width:100%; padding:10px 12px; font-size:14px;
-    border:1px solid #E0D48A; border-radius:10px;
-    background:#FFFFFF; color:#000000;
-    font-family:'Fredoka', 'Segoe UI', sans-serif;
+    width:100%;
+    padding:11px 13px;
+    font-size:14px;
+    font-family:'Inter',sans-serif;
+    border:1.5px solid #B7E8AC;
+    border-radius:8px;
+    background:#FFFFFF;
+    color:#141414;
     resize:vertical;
+  }
+  input::placeholder, textarea::placeholder{color:#7E9C78;}
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:#4FAE55;
   }
   textarea{min-height:110px;}
 
-  .rating{
-    display:flex; gap:6px; margin-top:6px;
+  .stars{display:flex;gap:6px;margin-top:2px;}
+  .stars span{
+    font-size:24px;
+    cursor:pointer;
+    color:#C7C7C7;
+    transition:color .15s;
+    user-select:none;
   }
-  .rating span{
-    font-size:26px; cursor:pointer; filter:grayscale(1) opacity(0.5);
-    transition:.15s;
-  }
-  .rating span.active{
-    filter:none; opacity:1;
+  .stars span.active{color:#F5B700;}
+
+  .postSlot{
+    margin:24px 0 4px;
+    height:2px;
+    background:repeating-linear-gradient(90deg,#9CCB92 0 8px,transparent 8px 14px);
   }
 
   button{
-    width:100%; margin-top:20px; padding:12px;
-    background:#000000; color:#FFF6D6;
-    font-weight:500; font-size:15px;
-    border:none; border-radius:999px; cursor:pointer;
-    font-family:'Fredoka', 'Segoe UI', sans-serif;
+    width:100%;
+    margin-top:18px;
+    padding:13px;
+    background:#0A0A0A;
+    color:#FFFFFF;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    border:none;
+    border-radius:999px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    transition:transform .08s ease;
   }
   button:active{transform:scale(0.97);}
+  button svg{width:16px;height:16px;stroke:#FFFFFF;fill:none;stroke-width:2.2;}
 
-  .note{
-    margin-top:14px; font-size:11.5px; color:#726F5B; text-align:center;
+  .err{
+    font-size:12px;
+    color:#B0562F;
+    margin-top:6px;
+    display:none;
   }
+  .err.show{display:block;}
+
+  .success{
+    display:none;
+    text-align:center;
+    padding:8px 4px 4px;
+  }
+  .success.show{display:block;}
+  .success .terkirim{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    color:#2E9E3F;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+  }
+  .success .terkirim svg{width:22px;height:22px;stroke:#2E9E3F;fill:none;stroke-width:3;}
+  .success .gifWrap{
+    display:flex;
+    justify-content:center;
+    margin-top:18px;
+  }
+  .success .gifWrap img{
+    width:120px;
+    height:120px;
+    object-fit:contain;
+    transform:scale(0);
+    opacity:0;
+    transition:transform .5s cubic-bezier(.34,1.56,.64,1), opacity .3s ease;
+  }
+  .success .gifWrap img.pop{
+    transform:scale(1);
+    opacity:1;
+  }
+
+  .formBody{display:block;}
+  .formBody.hide{display:none;}
+
+  .envRow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:26px 0 0 4px;
+  }
+  .envBtn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:56px;
+    height:56px;
+    flex-shrink:0;
+    background:#0A0A0A;
+    border:2px dashed #4FAE55;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .envBtn svg{width:26px;height:26px;stroke:#9CE8A0;fill:none;stroke-width:1.8;}
+  .envText{
+    text-align:left;
+    line-height:1.4;
+    margin-top:10px;
+  }
+  .envText .pinLine{
+    font-size:12px;
+    color:#9CE8A0;
+    font-weight:500;
+  }
+  .envText .copyLine{
+    font-size:10.5px;
+    color:#7A7A7A;
+  }
+
+  .pinBox{
+    display:none;
+    max-width:220px;
+    margin:14px auto 0;
+    background:#DFF6D8;
+    border:1.5px solid #B7E8AC;
+    border-radius:12px;
+    padding:16px 18px;
+    text-align:center;
+  }
+  .pinBox.show{display:block;}
+  .pinBox label{
+    display:block;
+    font-size:11.5px;
+    color:#1B3A17;
+    margin-bottom:8px;
+  }
+  .pinBox input{
+    width:100%;
+    text-align:center;
+    letter-spacing:6px;
+    font-size:16px;
+    padding:9px 10px;
+    border:1.5px solid #B7E8AC;
+    border-radius:8px;
+    background:#FFFFFF;
+    color:#141414;
+  }
+  .pinBox input:focus{outline:none;border-color:#4FAE55;}
+  .pinErr{
+    font-size:11px;
+    color:#B0562F;
+    margin-top:7px;
+    display:none;
+  }
+  .pinErr.show{display:block;}
+  .pinBox button{
+    margin-top:10px;
+    padding:9px;
+    font-size:13px;
+  }
+
+  .admin{
+    display:none;
+    margin-top:16px;
+  }
+  .admin.show{display:block;}
+  .admin-item{
+    background:#DFF6D8;
+    border:1.5px solid #B7E8AC;
+    border-radius:8px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .admin-item .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  }
+  .admin-item .nama{font-size:13px;font-weight:500;color:#141414;}
+  .admin-item .waktu{font-size:11px;color:#3F5C3A;}
+  .admin-item .bintang{font-size:12px;margin-bottom:6px;color:#2E9E3F;}
+  .admin-item .pesan{font-size:13px;color:#1B2E17;line-height:1.5;}
+  .admin-empty{
+    text-align:center;
+    font-size:13px;
+    color:#B8B8B8;
+    padding:20px 0;
+  }
+
   footer{
-    margin-top:24px; font-size:12px; color:#000000; text-align:center;
+    margin-top:26px;
+    text-align:center;
+    font-size:11.5px;
+    color:#7A7A7A;
   }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<h1>💌 Kritik & Saran</h1>
-<div class="subtitle">Suara kamu penting banget buat Llowye Shop jadi lebih baik!</div>
+  <h1>Kritik & Saran Llowye_$hop</h1>
+  <div class="eyebrow">Suara kamu penting banget buat Llowye_Shop jadi lebih baik!</div>
 
-<div class="card">
-  <label for="nama">Nama (opsional)</label>
-  <input type="text" id="nama" placeholder="Boleh nama samaran">
+  <div class="postcard">
+    <div class="stamp">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 6l8 7 8-7"/></svg>
+    </div>
 
-  <label>Kasih rating dong</label>
-  <div class="rating" id="ratingBox">
-    <span data-v="1">⭐</span>
-    <span data-v="2">⭐</span>
-    <span data-v="3">⭐</span>
-    <span data-v="4">⭐</span>
-    <span data-v="5">⭐</span>
+    <div class="formBody" id="formBody">
+      <div class="field">
+        <label for="nama">Nama (opsional)</label>
+        <input type="text" id="nama" placeholder="Nama ngarang juga boleh">
+      </div>
+
+      <div class="field">
+        <label>Kasih rating</label>
+        <div class="stars" id="stars">
+          <span data-v="1">★</span>
+          <span data-v="2">★</span>
+          <span data-v="3">★</span>
+          <span data-v="4">★</span>
+          <span data-v="5">★</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="pesan">Kritik & saran</label>
+        <textarea id="pesan" placeholder="Tulis kritik, saran, atau masukan buat toko di sini..."></textarea>
+        <div class="err" id="err">Wadidaw! pesannya belum diisi nih.</div>
+      </div>
+
+      <div class="postSlot"></div>
+
+      <button id="submitBtn" onclick="kirim()">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        Kirim ke kotak pos
+      </button>
+    </div>
+
+    <div class="success" id="success">
+      <div class="terkirim">
+        <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+        terkirim
+      </div>
+      <div class="gifWrap">
+        <img id="successGif" src="sukses.gif" alt="terkirim">
+      </div>
+    </div>
   </div>
 
-  <label for="pesan">Kritik & Saran</label>
-  <textarea id="pesan" placeholder="Tulis kritik, saran, atau masukan buat toko kami di sini..."></textarea>
+  <div class="envRow">
+    <button class="envBtn" id="envBtn" onclick="togglePinBox()" title="Kotak masuk pemilik toko">
+      <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 6l8 7 8-7"/></svg>
+    </button>
+    <div class="envText">
+      <div class="pinLine">PIN: 2006</div>
+      <div class="copyLine">© 2026 Llowye_Shop</div>
+    </div>
+  </div>
 
-  <button onclick="kirimSaran()">Kirim</button>
+  <div class="pinBox" id="pinBox">
+    <label for="pinInput">Masukin PIN buat buka kotak masuk</label>
+    <input type="password" id="pinInput" maxlength="4" inputmode="numeric" placeholder="&bull;&bull;&bull;&bull;">
+    <div class="pinErr" id="pinErr">PIN salah, coba lagi.</div>
+    <button onclick="cekPin()">Buka</button>
+  </div>
 
-  <div class="note">Kritik/saran kamu bakal dikirim langsung ke Nenek Llowye</div>
+  <div class="admin" id="admin"></div>
+
 </div>
 
-<footer>
-  © 2026 Llowye Shop
-</footer>
-
 <script>
-const WA_NUMBER = "628991740111";
 let selectedRating = 0;
-
-document.querySelectorAll('#ratingBox span').forEach(star => {
+document.querySelectorAll('#stars span').forEach(star => {
   star.addEventListener('click', () => {
     selectedRating = parseInt(star.dataset.v);
-    document.querySelectorAll('#ratingBox span').forEach(s => {
+    document.querySelectorAll('#stars span').forEach(s => {
       s.classList.toggle('active', parseInt(s.dataset.v) <= selectedRating);
     });
   });
 });
 
-function kirimSaran(){
-  const nama = document.getElementById('nama').value.trim() || "Anonim";
-  const pesan = document.getElementById('pesan').value.trim();
+function playClickSound(){
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  [700, 1100].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.05);
+    gain.gain.setValueAtTime(0.9, ctx.currentTime + i * 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.05 + 0.1);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.05);
+    osc.stop(ctx.currentTime + i * 0.05 + 0.1);
+  });
+}
 
-  if(pesan === ""){
-    alert("Kritik/saran nya belum diisi nih 🥺");
+async function kirim(){
+  const nama = document.getElementById('nama').value.trim() || 'Anonim';
+  const pesan = document.getElementById('pesan').value.trim();
+  const err = document.getElementById('err');
+
+  if(pesan === ''){
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+
+  const entry = {
+    nama,
+    rating: selectedRating,
+    pesan,
+    waktu: new Date().toISOString()
+  };
+
+  const key = 'saran:' + Date.now() + '-' + Math.random().toString(36).slice(2,8);
+
+  try{
+    const result = await window.storage.set(key, JSON.stringify(entry), true);
+    if(!result){
+      alert('Gagal menyimpan, coba lagi ya.');
+      return;
+    }
+    playClickSound();
+    document.getElementById('formBody').classList.add('hide');
+    document.getElementById('success').classList.add('show');
+    const gif = document.getElementById('successGif');
+    setTimeout(() => { gif.classList.add('pop'); }, 120);
+  }catch(e){
+    alert('Gagal menyimpan, coba lagi ya.');
+  }
+}
+
+const ADMIN_PIN = '2006';
+let unlocked = false;
+
+function togglePinBox(){
+  const admin = document.getElementById('admin');
+  const pinBox = document.getElementById('pinBox');
+
+  if(unlocked){
+    unlocked = false;
+    admin.classList.remove('show');
+    admin.innerHTML = '';
+    pinBox.classList.remove('show');
     return;
   }
 
-  const bintang = selectedRating > 0 ? "⭐".repeat(selectedRating) : "(belum kasih rating)";
+  pinBox.classList.toggle('show');
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinErr').classList.remove('show');
+}
 
-  const teks =
-    `Halo Nek Llowye, aku mau kasih kritik & saran nih:\n\n` +
-    `Nama: ${nama}\n` +
-    `Rating: ${bintang}\n` +
-    `Pesan: ${pesan}`;
+async function cekPin(){
+  const val = document.getElementById('pinInput').value.trim();
+  const pinErr = document.getElementById('pinErr');
 
-  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(teks)}`;
-  window.open(url, '_blank');
+  if(val !== ADMIN_PIN){
+    pinErr.classList.add('show');
+    return;
+  }
+  pinErr.classList.remove('show');
+  unlocked = true;
+  document.getElementById('pinBox').classList.remove('show');
+  await muatAdmin();
+}
+
+async function muatAdmin(){
+  const admin = document.getElementById('admin');
+  admin.classList.add('show');
+  admin.innerHTML = '<div class="admin-empty">memuat...</div>';
+
+  try{
+    const list = await window.storage.list('saran:', true);
+    const keys = (list && list.keys) ? list.keys : [];
+    if(keys.length === 0){
+      admin.innerHTML = '<div class="admin-empty">belum ada masukan yang masuk</div>';
+      return;
+    }
+    const entries = [];
+    for(const k of keys){
+      try{
+        const r = await window.storage.get(k, true);
+        if(r && r.value){
+          entries.push(JSON.parse(r.value));
+        }
+      }catch(e){}
+    }
+    entries.sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+
+    admin.innerHTML = entries.map(en => {
+      const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : 'belum kasih rating';
+      const tgl = new Date(en.waktu).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+      return '<div class="admin-item">' +
+        '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
+        '<div class="bintang">' + bintang + '</div>' +
+        '<div class="pesan">' + escapeHtml(en.pesan) + '</div>' +
+      '</div>';
+    }).join('');
+  }catch(e){
+    admin.innerHTML = '<div class="admin-empty">gagal memuat masukan</div>';
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
 }
 </script>
 
