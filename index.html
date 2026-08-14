@@ -181,8 +181,21 @@
     font-family:'Space Grotesk',sans-serif;
     font-weight:700;
     font-size:19px;
+    opacity:1;
+    transition:opacity .35s ease;
   }
+  .success .terkirim.fadeOut{opacity:0;}
   .success .terkirim svg{width:22px;height:22px;stroke:#2E9E3F;fill:none;stroke-width:3;}
+  .success .makasih{
+    color:#2E9E3F;
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:700;
+    font-size:19px;
+    opacity:0;
+    transition:opacity .35s ease;
+  }
+  .success .makasih.show{opacity:1;}
+  .success .makasih.fadeOut{opacity:0;}
   .success .gifWrap{
     display:flex;
     justify-content:center;
@@ -310,9 +323,29 @@
     justify-content:space-between;
     align-items:center;
     margin-bottom:6px;
+    gap:8px;
   }
   .admin-item .nama{font-size:13px;font-weight:500;color:#141414;}
-  .admin-item .waktu{font-size:11px;color:#3F5C3A;}
+  .admin-item .waktu{font-size:11px;color:#3F5C3A;flex:1;}
+  .hapusBtn{
+    width:auto;
+    margin-top:0;
+    padding:5px 10px;
+    font-size:11px;
+    background:#B0562F;
+    border-radius:6px;
+    flex-shrink:0;
+  }
+  .editBalasanBtn{
+    width:auto;
+    display:inline-flex;
+    margin-top:6px;
+    padding:5px 10px;
+    font-size:11px;
+    background:transparent;
+    border:1px solid #4FAE55;
+    color:#1B3A17;
+  }
   .admin-item .bintang{font-size:12px;margin-bottom:6px;color:#2E9E3F;}
   .admin-item .pesan{font-size:13px;color:#1B2E17;line-height:1.5;}
   .balasan{
@@ -349,6 +382,26 @@
     color:#B8B8B8;
     padding:20px 0;
   }
+
+  .thread-item{
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px dashed #B7E8AC;
+  }
+  .thread-nama{font-size:12px;font-weight:600;color:#1B3A17;}
+  .thread-isi{font-size:13px;color:#1B2E17;line-height:1.5;margin-top:2px;}
+  .replyBadge{font-size:10.5px;color:#4FAE55;font-weight:500;margin-bottom:2px;}
+  .balasKecil{
+    width:auto;
+    display:inline-flex;
+    margin-top:6px;
+    padding:5px 10px;
+    font-size:11px;
+    background:transparent;
+    border:1px solid #4FAE55;
+    color:#1B3A17;
+  }
+  .formBalasSlot input, .formBalasSlot textarea{margin-bottom:6px;}
 
   footer{
     margin-top:26px;
@@ -402,10 +455,11 @@
     </div>
 
     <div class="success" id="success">
-      <div class="terkirim">
+      <div class="terkirim" id="terkirimText">
         <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
         terkirim
       </div>
+      <div class="makasih" id="makasihText">Terima kasih ya!</div>
       <div class="gifWrap">
         <img id="successGif" src="sukses.gif" alt="terkirim">
       </div>
@@ -492,6 +546,12 @@ async function kirim(){
     document.getElementById('success').classList.add('show');
     const gif = document.getElementById('successGif');
     setTimeout(() => { gif.classList.add('pop'); }, 120);
+
+    const terkirimText = document.getElementById('terkirimText');
+    const makasihText = document.getElementById('makasihText');
+    setTimeout(() => { terkirimText.classList.add('fadeOut'); }, 1400);
+    setTimeout(() => { makasihText.classList.add('show'); }, 1750);
+    setTimeout(() => { makasihText.classList.add('fadeOut'); }, 3250);
   }catch(e){
     alert('Gagal menyimpan, coba lagi ya.');
   }
@@ -551,17 +611,22 @@ async function muatAdmin(){
       return;
     }
 
+    const { data: semuaBalasan } = await supabaseClient
+      .from('balasan_saran')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    const balasanList = semuaBalasan || [];
+
     admin.innerHTML = data.map(en => {
       const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : 'belum kasih rating';
       const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
-      const balasanHtml = en.balasan
-        ? '<div class="balasan"><div class="label">Balasan Nenek Llowye</div><div class="isi">' + escapeHtml(en.balasan) + '</div></div>'
-        : '<div class="balasan"><div class="label">Balas pesan ini</div><textarea id="balasInput-' + en.id + '" placeholder="Tulis balasan buat pesan ini..."></textarea><button class="kirimBalasan" onclick="kirimBalasan(\'' + en.id + '\')">Kirim balasan</button></div>';
+      const untukIni = balasanList.filter(b => b.saran_id === en.id);
       return '<div class="admin-item">' +
-        '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
+        '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span><button class="hapusBtn" onclick="hapusPesan(\'' + en.id + '\')">Hapus</button></div>' +
         '<div class="bintang">' + bintang + '</div>' +
         '<div class="pesan">' + escapeHtml(en.pesan) + '</div>' +
-        balasanHtml +
+        renderThread(en.id, untukIni) +
       '</div>';
     }).join('');
   }catch(e){
@@ -569,17 +634,45 @@ async function muatAdmin(){
   }
 }
 
-async function kirimBalasan(id){
-  const input = document.getElementById('balasInput-' + id);
-  const teks = input.value.trim();
-  if(teks === ''){
+function renderThread(saranId, balasanList){
+  const itemsHtml = balasanList.map(b => {
+    const target = b.reply_to ? balasanList.find(x => x.id === b.reply_to) : null;
+    const badge = target ? '<div class="replyBadge">Membalas @' + escapeHtml(target.nama) + '</div>' : '';
+    return '<div class="thread-item">' + badge +
+      '<div class="thread-nama">' + escapeHtml(b.nama) + '</div>' +
+      '<div class="thread-isi">' + escapeHtml(b.isi) + '</div>' +
+      '<button class="balasKecil" onclick="tampilFormBalas(\'' + saranId + '\', \'' + b.id + '\', ' + JSON.stringify(b.nama) + ')">Balas</button>' +
+      '<div class="formBalasSlot" id="formBalas-' + b.id + '"></div>' +
+    '</div>';
+  }).join('');
+
+  return '<div class="balasan">' + itemsHtml +
+    '<button class="balasKecil" onclick="tampilFormBalas(\'' + saranId + '\', null, null)">+ Tambah balasan</button>' +
+    '<div class="formBalasSlot" id="formBalas-root-' + saranId + '"></div>' +
+  '</div>';
+}
+
+function tampilFormBalas(saranId, replyTo, namaDibales){
+  const slotId = replyTo ? 'formBalas-' + replyTo : 'formBalas-root-' + saranId;
+  const slot = document.getElementById(slotId);
+  const label = namaDibales ? 'Membalas @' + namaDibales : 'Tambah balasan';
+  slot.innerHTML =
+    '<div class="label">' + label + '</div>' +
+    '<input type="text" id="namaBalas-' + slotId + '" placeholder="Nama kamu">' +
+    '<textarea id="isiBalas-' + slotId + '" placeholder="Tulis balasan..."></textarea>' +
+    '<button class="kirimBalasan" onclick="kirimBalasan(\'' + saranId + '\', ' + (replyTo ? "'" + replyTo + "'" : 'null') + ', \'' + slotId + '\')">Kirim</button>';
+}
+
+async function kirimBalasan(saranId, replyTo, slotId){
+  const nama = document.getElementById('namaBalas-' + slotId).value.trim() || 'Anonim';
+  const isi = document.getElementById('isiBalas-' + slotId).value.trim();
+  if(isi === ''){
     return;
   }
   try{
     const { error } = await supabaseClient
-      .from('saran')
-      .update({ balasan: teks })
-      .eq('id', id);
+      .from('balasan_saran')
+      .insert([{ saran_id: saranId, nama, isi, reply_to: replyTo }]);
 
     if(error){
       alert('Gagal kirim balasan, coba lagi ya.');
@@ -591,6 +684,26 @@ async function kirimBalasan(id){
   }
 }
 
+async function hapusPesan(id){
+  if(!confirm('Yakin mau hapus pesan ini?')){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('saran')
+      .delete()
+      .eq('id', id);
+
+    if(error){
+      alert('Gagal hapus pesan, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal hapus pesan, coba lagi ya.');
+  }
+}
+
 function escapeHtml(str){
   const d = document.createElement('div');
   d.textContent = str;
@@ -599,4 +712,5 @@ function escapeHtml(str){
 </script>
 
 </body>
-</html>
+ </html>
+  
