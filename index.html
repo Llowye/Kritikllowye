@@ -488,7 +488,16 @@
 const SUPABASE_URL = 'https://afsqlxxkllewgumadjkn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_HtgRECbeXHIcnUf5B6JyDA_21UdXF3U';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+  
+function getDeviceId(){
+  let id = localStorage.getItem('llowye_device_id');
+  if(!id){
+    id = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem('llowye_device_id', id);
+  }
+  return id;
+}
+  
 let selectedRating = 0;
 document.querySelectorAll('#stars span').forEach(star => {
   star.addEventListener('click', () => {
@@ -610,13 +619,20 @@ async function muatAdmin(){
 }
 
 function renderThread(saranId, balasanList){
+  const myId = getDeviceId();
   const itemsHtml = balasanList.map(b => {
     const target = b.reply_to ? balasanList.find(x => x.id === b.reply_to) : null;
     const badge = target ? '<div class="replyBadge">Membalas @' + escapeHtml(target.nama) + '</div>' : '';
+    const isMine = b.device_id && b.device_id === myId;
+    const ownerBtns = isMine
+      ? '<button class="balasKecil" onclick="editBalasanMode(\'' + b.id + '\')">Edit</button>' +
+        '<button class="balasKecil" onclick="hapusBalasan(\'' + b.id + '\')">Hapus</button>'
+      : '';
     return '<div class="thread-item">' + badge +
       '<div class="thread-nama">' + escapeHtml(b.nama) + '</div>' +
-      '<div class="thread-isi">' + escapeHtml(b.isi) + '</div>' +
+      '<div class="thread-isi" id="isiBalasan-' + b.id + '">' + escapeHtml(b.isi) + '</div>' +
       '<button class="balasKecil" onclick="tampilFormBalas(\'' + saranId + '\', \'' + b.id + '\', ' + JSON.stringify(b.nama) + ')">Balas</button>' +
+      ownerBtns +
       '<div class="formBalasSlot" id="formBalas-' + b.id + '"></div>' +
     '</div>';
   }).join('');
@@ -626,7 +642,7 @@ function renderThread(saranId, balasanList){
     '<div class="formBalasSlot" id="formBalas-root-' + saranId + '"></div>' +
   '</div>';
 }
-
+  
 function tampilFormBalas(saranId, replyTo, namaDibales){
   const slotId = replyTo ? 'formBalas-' + replyTo : 'formBalas-root-' + saranId;
   const slot = document.getElementById(slotId);
@@ -647,7 +663,7 @@ async function kirimBalasan(saranId, replyTo, slotId){
   try{
     const { error } = await supabaseClient
       .from('balasan_saran')
-      .insert([{ saran_id: saranId, nama, isi, reply_to: replyTo }]);
+      .insert([{ saran_id: saranId, nama, isi, reply_to: replyTo, device_id: getDeviceId() }]);
 
     if(error){
       alert('Gagal kirim balasan, coba lagi ya.');
@@ -658,7 +674,62 @@ async function kirimBalasan(saranId, replyTo, slotId){
     alert('Gagal kirim balasan, coba lagi ya.');
   }
 }
+function editBalasanMode(id){
+  const el = document.getElementById('isiBalasan-' + id);
+  const original = el.textContent;
+  el.innerHTML = '<textarea id="editBalasan-' + id + '">' + escapeHtml(original) + '</textarea>' +
+    '<button class="kirimBalasan" onclick="simpanEditBalasan(\'' + id + '\')">Simpan</button>' +
+    '<button class="kirimBalasan" style="background:transparent;border:1px solid #4FAE55;color:#1B3A17;" onclick="batalEditBalasan(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>';
+}
 
+function batalEditBalasan(id, original){
+  document.getElementById('isiBalasan-' + id).textContent = original;
+}
+
+async function simpanEditBalasan(id){
+  const textarea = document.getElementById('editBalasan-' + id);
+  const isiBaru = textarea.value.trim();
+  if(isiBaru === ''){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('balasan_saran')
+      .update({ isi: isiBaru })
+      .eq('id', id)
+      .eq('device_id', getDeviceId());
+
+    if(error){
+      alert('Gagal simpan perubahan, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal simpan perubahan, coba lagi ya.');
+  }
+}
+
+async function hapusBalasan(id){
+  if(!confirm('Yakin mau hapus balasan ini?')){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('balasan_saran')
+      .delete()
+      .eq('id', id)
+      .eq('device_id', getDeviceId());
+
+    if(error){
+      alert('Gagal hapus balasan, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal hapus balasan, coba lagi ya.');
+  }
+}
+  
 async function hapusPesan(id){
   if(!confirm('Yakin mau hapus pesan ini?')){
     return;
