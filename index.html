@@ -419,7 +419,7 @@
     <div class="envText">
       <div class="cekDisini">
         <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
-        cek disini!
+        CEK DISINI!
       </div>
       <div class="pinLine">PIN: 2006</div>
       <div class="copyLine">© 2026 Llowye_Shop</div>
@@ -555,7 +555,7 @@ async function muatAdmin(){
       const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : 'belum kasih rating';
       const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
       const balasanHtml = en.balasan
-        ? '<div class="balasan"><div class="label">Balasan toko</div><div class="isi">' + escapeHtml(en.balasan) + '</div></div>'
+        ? '<div class="balasan"><div class="label">Balasan Nenek Llowye</div><div class="isi">' + escapeHtml(en.balasan) + '</div></div>'
         : '<div class="balasan"><div class="label">Balas pesan ini</div><textarea id="balasInput-' + en.id + '" placeholder="Tulis balasan buat pesan ini..."></textarea><button class="kirimBalasan" onclick="kirimBalasan(\'' + en.id + '\')">Kirim balasan</button></div>';
       return '<div class="admin-item">' +
         '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
