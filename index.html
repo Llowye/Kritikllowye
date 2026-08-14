@@ -259,10 +259,10 @@
     margin-left:21px;
   }
   .envText .copyLine{
-    font-size:10.5px;
-    color:#7A7A7A;
-    margin-left:21px;
-  }
+  font-size:10.5px;
+  color:#9CE8A0;
+  margin-left:21px;
+}
 
   .pinBox{
     display:none;
@@ -475,17 +475,10 @@
         <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
         LIHAT DISINI!
       </div>
-      <div class="pinLine">PIN: 2006</div>
       <div class="copyLine">© 2026 Llowye_Shop</div>
     </div>
   </div>
 
-  <div class="pinBox" id="pinBox">
-    <label for="pinInput">Masukin PIN buat buka kotak masuk</label>
-    <input type="password" id="pinInput" maxlength="4" inputmode="numeric" placeholder="&bull;&bull;&bull;&bull;">
-    <div class="pinErr" id="pinErr">PIN salah, coba lagi.</div>
-    <button onclick="cekPin()">Buka</button>
-  </div>
 
   <div class="admin" id="admin"></div>
 
@@ -556,38 +549,20 @@ async function kirim(){
     alert('Gagal menyimpan, coba lagi ya.');
   }
 }
-
-const ADMIN_PIN = '2006';
+  
 let unlocked = false;
 
-function togglePinBox(){
+async function togglePinBox(){
   const admin = document.getElementById('admin');
-  const pinBox = document.getElementById('pinBox');
 
   if(unlocked){
     unlocked = false;
     admin.classList.remove('show');
     admin.innerHTML = '';
-    pinBox.classList.remove('show');
     return;
   }
 
-  pinBox.classList.toggle('show');
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinErr').classList.remove('show');
-}
-
-async function cekPin(){
-  const val = document.getElementById('pinInput').value.trim();
-  const pinErr = document.getElementById('pinErr');
-
-  if(val !== ADMIN_PIN){
-    pinErr.classList.add('show');
-    return;
-  }
-  pinErr.classList.remove('show');
   unlocked = true;
-  document.getElementById('pinBox').classList.remove('show');
   await muatAdmin();
 }
 
