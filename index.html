@@ -264,48 +264,6 @@
   margin-left:21px;
 }
 
-  .pinBox{
-    display:none;
-    max-width:220px;
-    margin:14px auto 0;
-    background:#DFF6D8;
-    border:1.5px solid #B7E8AC;
-    border-radius:12px;
-    padding:16px 18px;
-    text-align:center;
-  }
-  .pinBox.show{display:block;}
-  .pinBox label{
-    display:block;
-    font-size:11.5px;
-    color:#1B3A17;
-    margin-bottom:8px;
-  }
-  .pinBox input{
-    width:100%;
-    text-align:center;
-    letter-spacing:6px;
-    font-size:16px;
-    padding:9px 10px;
-    border:1.5px solid #B7E8AC;
-    border-radius:8px;
-    background:#FFFFFF;
-    color:#141414;
-  }
-  .pinBox input:focus{outline:none;border-color:#4FAE55;}
-  .pinErr{
-    font-size:11px;
-    color:#B0562F;
-    margin-top:7px;
-    display:none;
-  }
-  .pinErr.show{display:block;}
-  .pinBox button{
-    margin-top:10px;
-    padding:9px;
-    font-size:13px;
-  }
-
   .admin{
     display:none;
     margin-top:16px;
@@ -403,6 +361,45 @@
   }
   .formBalasSlot input, .formBalasSlot textarea{margin-bottom:6px;}
 
+  .feed{margin-top:26px;}
+  .feed-item{
+    background:#141414;
+    border:1.5px solid #2A2A2A;
+    border-radius:10px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .feed-item .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+    gap:8px;
+  }
+  .feed-item .nama{font-size:13px;font-weight:500;color:#FFFFFF;}
+  .feed-item .waktu{font-size:11px;color:#8A8A8A;}
+  .feed-item .bintang{font-size:12px;margin-bottom:6px;color:#9CE8A0;}
+  .feed-item .pesan{font-size:13px;color:#D8D8D8;line-height:1.5;}
+  .feed-item textarea{margin-top:6px;min-height:70px;}
+  .feed-item .ownerBtns{margin-top:8px;display:flex;gap:6px;}
+  .feed-item .kecilBtn{
+    width:auto;
+    display:inline-flex;
+    padding:6px 12px;
+    font-size:11.5px;
+    margin-top:6px;
+    background:transparent;
+    border:1px solid #4FAE55;
+    color:#9CE8A0;
+  }
+  .feed-item .kecilBtn.hapus{border-color:#B0562F;color:#E28866;}
+  .feed-empty{
+    text-align:center;
+    font-size:12.5px;
+    color:#7A7A7A;
+    padding:12px 0;
+  }
+
   footer{
     margin-top:26px;
     text-align:center;
@@ -466,6 +463,8 @@
     </div>
   </div>
 
+  <div class="feed" id="feed"></div>
+
   <div class="envRow">
     <button class="envBtn" id="envBtn" onclick="togglePinBox()" title="Kotak masuk pemilik toko">
       <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 6l8 7 8-7"/></svg>
@@ -498,6 +497,8 @@ function getDeviceId(){
   return id;
 }
   
+muatFeed();
+
 let selectedRating = 0;
 document.querySelectorAll('#stars span').forEach(star => {
   star.addEventListener('click', () => {
@@ -537,7 +538,7 @@ async function kirim(){
   try{
     const { error } = await supabaseClient
       .from('saran')
-      .insert([{ nama, rating: selectedRating, pesan }]);
+      .insert([{ nama, rating: selectedRating, pesan, device_id: getDeviceId() }]);
 
     if(error){
       alert('Gagal menyimpan, coba lagi ya.');
@@ -554,8 +555,107 @@ async function kirim(){
     setTimeout(() => { terkirimText.classList.add('fadeOut'); }, 1400);
     setTimeout(() => { makasihText.classList.add('show'); }, 1750);
     setTimeout(() => { makasihText.classList.add('fadeOut'); }, 3250);
+    await muatFeed();
   }catch(e){
     alert('Gagal menyimpan, coba lagi ya.');
+  }
+}
+
+async function muatFeed(){
+  const feed = document.getElementById('feed');
+  try{
+    const { data, error } = await supabaseClient
+      .from('saran')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if(error){
+      feed.innerHTML = '';
+      return;
+    }
+    if(!data || data.length === 0){
+      feed.innerHTML = '<div class="feed-empty">Belum ada saran, jadi yang pertama yuk!</div>';
+      return;
+    }
+
+    const myId = getDeviceId();
+    feed.innerHTML = data.map(en => {
+      const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : '';
+      const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
+      const isMine = en.device_id && en.device_id === myId;
+      const ownerBtns = isMine
+        ? '<div class="ownerBtns">' +
+            '<button class="kecilBtn" onclick="editSaranMode(\'' + en.id + '\')">Edit</button>' +
+            '<button class="kecilBtn hapus" onclick="hapusSaranSaya(\'' + en.id + '\')">Hapus</button>' +
+          '</div>'
+        : '';
+      return '<div class="feed-item" id="feedItem-' + en.id + '">' +
+        '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
+        (bintang ? '<div class="bintang">' + bintang + '</div>' : '') +
+        '<div class="pesan" id="feedPesan-' + en.id + '">' + escapeHtml(en.pesan) + '</div>' +
+        ownerBtns +
+      '</div>';
+    }).join('');
+  }catch(e){
+    feed.innerHTML = '';
+  }
+}
+
+function editSaranMode(id){
+  const el = document.getElementById('feedPesan-' + id);
+  const original = el.textContent;
+  el.innerHTML = '<textarea id="editSaran-' + id + '">' + escapeHtml(original) + '</textarea>' +
+    '<div class="ownerBtns">' +
+    '<button class="kecilBtn" onclick="simpanEditSaran(\'' + id + '\')">Simpan</button>' +
+    '<button class="kecilBtn hapus" onclick="batalEditSaran(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>' +
+    '</div>';
+}
+
+function batalEditSaran(id, original){
+  document.getElementById('feedPesan-' + id).textContent = original;
+}
+
+async function simpanEditSaran(id){
+  const textarea = document.getElementById('editSaran-' + id);
+  const pesanBaru = textarea.value.trim();
+  if(pesanBaru === ''){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('saran')
+      .update({ pesan: pesanBaru })
+      .eq('id', id)
+      .eq('device_id', getDeviceId());
+
+    if(error){
+      alert('Gagal simpan perubahan, coba lagi ya.');
+      return;
+    }
+    await muatFeed();
+  }catch(e){
+    alert('Gagal simpan perubahan, coba lagi ya.');
+  }
+}
+
+async function hapusSaranSaya(id){
+  if(!confirm('Yakin mau hapus saran kamu ini?')){
+    return;
+  }
+  try{
+    const { error } = await supabaseClient
+      .from('saran')
+      .delete()
+      .eq('id', id)
+      .eq('device_id', getDeviceId());
+
+    if(error){
+      alert('Gagal hapus, coba lagi ya.');
+      return;
+    }
+    await muatFeed();
+  }catch(e){
+    alert('Gagal hapus, coba lagi ya.');
   }
 }
   
