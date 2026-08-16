@@ -340,6 +340,18 @@
     color:#B8B8B8;
     padding:20px 0;
   }
+  .adminBar{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .adminStatus{
+    font-size:11.5px;
+    font-weight:600;
+    color:#2E9E3F;
+  }
 
   .thread-item{
     margin-top:10px;
@@ -361,28 +373,8 @@
   }
   .formBalasSlot input, .formBalasSlot textarea{margin-bottom:6px;}
 
-  .feed{margin-top:26px;}
-  .feed-item{
-    background:#141414;
-    border:1.5px solid #2A2A2A;
-    border-radius:10px;
-    padding:14px 16px;
-    margin-bottom:10px;
-  }
-  .feed-item .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:6px;
-    gap:8px;
-  }
-  .feed-item .nama{font-size:13px;font-weight:500;color:#FFFFFF;}
-  .feed-item .waktu{font-size:11px;color:#8A8A8A;}
-  .feed-item .bintang{font-size:12px;margin-bottom:6px;color:#9CE8A0;}
-  .feed-item .pesan{font-size:13px;color:#D8D8D8;line-height:1.5;}
-  .feed-item textarea{margin-top:6px;min-height:70px;}
-  .feed-item .ownerBtns{margin-top:8px;display:flex;gap:6px;}
-  .feed-item .kecilBtn{
+  .ownerBtns{margin-top:8px;display:flex;gap:6px;}
+  .kecilBtn{
     width:auto;
     display:inline-flex;
     padding:6px 12px;
@@ -390,15 +382,9 @@
     margin-top:6px;
     background:transparent;
     border:1px solid #4FAE55;
-    color:#9CE8A0;
+    color:#1B3A17;
   }
-  .feed-item .kecilBtn.hapus{border-color:#B0562F;color:#E28866;}
-  .feed-empty{
-    text-align:center;
-    font-size:12.5px;
-    color:#7A7A7A;
-    padding:12px 0;
-  }
+  .kecilBtn.hapus{border-color:#B0562F;color:#8A3A1E;}
 
   footer{
     margin-top:26px;
@@ -463,9 +449,8 @@
     </div>
   </div>
 
-  <div class="feed" id="feed"></div>
-<div class="envRow">
-    <button class="envBtn" id="envBtn" onclick="togglePinBox()" title="Kotak masuk pemilik toko">
+  <div class="envRow">
+    <button class="envBtn" id="envBtn" onclick="togglePanel()" title="Lihat semua komentar">
       <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 6l8 7 8-7"/></svg>
     </button>
     <div class="envText">
@@ -477,9 +462,6 @@
     </div>
   </div>
 
-  <div class="feed" id="feed"></div>
-
-
   <div class="admin" id="admin"></div>
 
 </div>
@@ -488,7 +470,10 @@
 const SUPABASE_URL = 'https://afsqlxxkllewgumadjkn.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_HtgRECbeXHIcnUf5B6JyDA_21UdXF3U';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  
+
+// GANTI password ini jadi password rahasia kamu sendiri sebagai admin toko
+const ADMIN_KEY = 'GANTI_PASSWORD_ADMIN_DISINI';
+
 function getDeviceId(){
   let id = localStorage.getItem('llowye_device_id');
   if(!id){
@@ -497,8 +482,28 @@ function getDeviceId(){
   }
   return id;
 }
-  
-muatFeed();
+
+function isAdmin(){
+  return localStorage.getItem('llowye_is_admin') === 'true';
+}
+
+function adminLogin(){
+  const pw = prompt('Masukkan password admin:');
+  if(pw === null) return;
+  if(pw === ADMIN_KEY){
+    localStorage.setItem('llowye_is_admin', 'true');
+    alert('Mode admin aktif.');
+  }else{
+    alert('Password salah.');
+  }
+  if(unlocked) muatAdmin();
+}
+
+function adminLogout(){
+  localStorage.removeItem('llowye_is_admin');
+  alert('Mode admin dimatikan.');
+  if(unlocked) muatAdmin();
+}
 
 let selectedRating = 0;
 document.querySelectorAll('#stars span').forEach(star => {
@@ -556,113 +561,15 @@ async function kirim(){
     setTimeout(() => { terkirimText.classList.add('fadeOut'); }, 1400);
     setTimeout(() => { makasihText.classList.add('show'); }, 1750);
     setTimeout(() => { makasihText.classList.add('fadeOut'); }, 3250);
-    await muatFeed();
+    if(unlocked) await muatAdmin();
   }catch(e){
     alert('Gagal menyimpan, coba lagi ya.');
   }
 }
 
-async function muatFeed(){
-  const feed = document.getElementById('feed');
-  try{
-    const { data, error } = await supabaseClient
-      .from('saran')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if(error){
-      feed.innerHTML = '';
-      return;
-    }
-    if(!data || data.length === 0){
-      feed.innerHTML = '<div class="feed-empty">Belum ada saran, jadi yang pertama yuk!</div>';
-      return;
-    }
-
-    const myId = getDeviceId();
-    feed.innerHTML = data.map(en => {
-      const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : '';
-      const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
-      const isMine = en.device_id && en.device_id === myId;
-      const ownerBtns = isMine
-        ? '<div class="ownerBtns">' +
-            '<button class="kecilBtn" onclick="editSaranMode(\'' + en.id + '\')">Edit</button>' +
-            '<button class="kecilBtn hapus" onclick="hapusSaranSaya(\'' + en.id + '\')">Hapus</button>' +
-          '</div>'
-        : '';
-      return '<div class="feed-item" id="feedItem-' + en.id + '">' +
-        '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
-        (bintang ? '<div class="bintang">' + bintang + '</div>' : '') +
-        '<div class="pesan" id="feedPesan-' + en.id + '">' + escapeHtml(en.pesan) + '</div>' +
-        ownerBtns +
-      '</div>';
-    }).join('');
-  }catch(e){
-    feed.innerHTML = '';
-  }
-}
-
-function editSaranMode(id){
-  const el = document.getElementById('feedPesan-' + id);
-  const original = el.textContent;
-  el.innerHTML = '<textarea id="editSaran-' + id + '">' + escapeHtml(original) + '</textarea>' +
-    '<div class="ownerBtns">' +
-    '<button class="kecilBtn" onclick="simpanEditSaran(\'' + id + '\')">Simpan</button>' +
-    '<button class="kecilBtn hapus" onclick="batalEditSaran(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>' +
-    '</div>';
-}
-
-function batalEditSaran(id, original){
-  document.getElementById('feedPesan-' + id).textContent = original;
-}
-
-async function simpanEditSaran(id){
-  const textarea = document.getElementById('editSaran-' + id);
-  const pesanBaru = textarea.value.trim();
-  if(pesanBaru === ''){
-    return;
-  }
-  try{
-    const { error } = await supabaseClient
-      .from('saran')
-      .update({ pesan: pesanBaru })
-      .eq('id', id)
-      .eq('device_id', getDeviceId());
-
-    if(error){
-      alert('Gagal simpan perubahan, coba lagi ya.');
-      return;
-    }
-    await muatFeed();
-  }catch(e){
-    alert('Gagal simpan perubahan, coba lagi ya.');
-  }
-}
-
-async function hapusSaranSaya(id){
-  if(!confirm('Yakin mau hapus saran kamu ini?')){
-    return;
-  }
-  try{
-    const { error } = await supabaseClient
-      .from('saran')
-      .delete()
-      .eq('id', id)
-      .eq('device_id', getDeviceId());
-
-    if(error){
-      alert('Gagal hapus, coba lagi ya.');
-      return;
-    }
-    await muatFeed();
-  }catch(e){
-    alert('Gagal hapus, coba lagi ya.');
-  }
-}
-  
 let unlocked = false;
 
-async function togglePinBox(){
+async function togglePanel(){
   const admin = document.getElementById('admin');
 
   if(unlocked){
@@ -691,8 +598,15 @@ async function muatAdmin(){
       admin.innerHTML = '<div class="admin-empty">gagal memuat masukan</div>';
       return;
     }
+
+    const adminBar = '<div class="adminBar">' +
+      (isAdmin()
+        ? '<span class="adminStatus">Mode admin aktif</span><button class="balasKecil" onclick="adminLogout()">Keluar admin</button>'
+        : '<button class="balasKecil" onclick="adminLogin()">Masuk sebagai admin</button>') +
+      '</div>';
+
     if(!data || data.length === 0){
-      admin.innerHTML = '<div class="admin-empty">belum ada masukan yang masuk</div>';
+      admin.innerHTML = adminBar + '<div class="admin-empty">belum ada masukan yang masuk</div>';
       return;
     }
 
@@ -702,20 +616,87 @@ async function muatAdmin(){
       .order('created_at', { ascending: true });
 
     const balasanList = semuaBalasan || [];
+    const myId = getDeviceId();
 
-    admin.innerHTML = data.map(en => {
+    admin.innerHTML = adminBar + data.map(en => {
       const bintang = en.rating > 0 ? '★'.repeat(en.rating) + '☆'.repeat(5 - en.rating) : 'belum kasih rating';
       const tgl = new Date(en.created_at).toLocaleString('id-ID', {day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'});
       const untukIni = balasanList.filter(b => b.saran_id === en.id);
+      const isMine = en.device_id && en.device_id === myId;
+      const ownerBtns = (isMine || isAdmin())
+        ? '<div class="ownerBtns">' +
+            '<button class="kecilBtn" onclick="editSaranMode(\'' + en.id + '\')">Edit</button>' +
+            '<button class="kecilBtn hapus" onclick="hapusSaran(\'' + en.id + '\')">Hapus</button>' +
+          '</div>'
+        : '';
       return '<div class="admin-item">' +
         '<div class="top"><span class="nama">' + escapeHtml(en.nama) + '</span><span class="waktu">' + tgl + '</span></div>' +
         '<div class="bintang">' + bintang + '</div>' +
-        '<div class="pesan">' + escapeHtml(en.pesan) + '</div>' +
+        '<div class="pesan" id="feedPesan-' + en.id + '">' + escapeHtml(en.pesan) + '</div>' +
+        ownerBtns +
         renderThread(en.id, untukIni) +
       '</div>';
     }).join('');
   }catch(e){
     admin.innerHTML = '<div class="admin-empty">gagal memuat masukan</div>';
+  }
+}
+
+function editSaranMode(id){
+  const el = document.getElementById('feedPesan-' + id);
+  const original = el.textContent;
+  el.innerHTML = '<textarea id="editSaran-' + id + '">' + escapeHtml(original) + '</textarea>' +
+    '<div class="ownerBtns">' +
+    '<button class="kecilBtn" onclick="simpanEditSaran(\'' + id + '\')">Simpan</button>' +
+    '<button class="kecilBtn hapus" onclick="batalEditSaran(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>' +
+    '</div>';
+}
+
+function batalEditSaran(id, original){
+  document.getElementById('feedPesan-' + id).textContent = original;
+}
+
+async function simpanEditSaran(id){
+  const textarea = document.getElementById('editSaran-' + id);
+  const pesanBaru = textarea.value.trim();
+  if(pesanBaru === ''){
+    return;
+  }
+  try{
+    let query = supabaseClient.from('saran').update({ pesan: pesanBaru }).eq('id', id);
+    if(!isAdmin()){
+      query = query.eq('device_id', getDeviceId());
+    }
+    const { error } = await query;
+
+    if(error){
+      alert('Gagal simpan perubahan, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal simpan perubahan, coba lagi ya.');
+  }
+}
+
+async function hapusSaran(id){
+  if(!confirm('Yakin mau hapus komentar ini?')){
+    return;
+  }
+  try{
+    let query = supabaseClient.from('saran').delete().eq('id', id);
+    if(!isAdmin()){
+      query = query.eq('device_id', getDeviceId());
+    }
+    const { error } = await query;
+
+    if(error){
+      alert('Gagal hapus, coba lagi ya.');
+      return;
+    }
+    await muatAdmin();
+  }catch(e){
+    alert('Gagal hapus, coba lagi ya.');
   }
 }
 
@@ -725,7 +706,7 @@ function renderThread(saranId, balasanList){
     const target = b.reply_to ? balasanList.find(x => x.id === b.reply_to) : null;
     const badge = target ? '<div class="replyBadge">Membalas @' + escapeHtml(target.nama) + '</div>' : '';
     const isMine = b.device_id && b.device_id === myId;
-    const ownerBtns = isMine
+    const ownerBtns = (isMine || isAdmin())
       ? '<button class="balasKecil" onclick="editBalasanMode(\'' + b.id + '\')">Edit</button>' +
         '<button class="balasKecil" onclick="hapusBalasan(\'' + b.id + '\')">Hapus</button>'
       : '';
@@ -794,11 +775,11 @@ async function simpanEditBalasan(id){
     return;
   }
   try{
-    const { error } = await supabaseClient
-      .from('balasan_saran')
-      .update({ isi: isiBaru })
-      .eq('id', id)
-      .eq('device_id', getDeviceId());
+    let query = supabaseClient.from('balasan_saran').update({ isi: isiBaru }).eq('id', id);
+    if(!isAdmin()){
+      query = query.eq('device_id', getDeviceId());
+    }
+    const { error } = await query;
 
     if(error){
       alert('Gagal simpan perubahan, coba lagi ya.');
@@ -815,11 +796,11 @@ async function hapusBalasan(id){
     return;
   }
   try{
-    const { error } = await supabaseClient
-      .from('balasan_saran')
-      .delete()
-      .eq('id', id)
-      .eq('device_id', getDeviceId());
+    let query = supabaseClient.from('balasan_saran').delete().eq('id', id);
+    if(!isAdmin()){
+      query = query.eq('device_id', getDeviceId());
+    }
+    const { error } = await query;
 
     if(error){
       alert('Gagal hapus balasan, coba lagi ya.');
@@ -828,26 +809,6 @@ async function hapusBalasan(id){
     await muatAdmin();
   }catch(e){
     alert('Gagal hapus balasan, coba lagi ya.');
-  }
-}
-  
-async function hapusPesan(id){
-  if(!confirm('Yakin mau hapus pesan ini?')){
-    return;
-  }
-  try{
-    const { error } = await supabaseClient
-      .from('saran')
-      .delete()
-      .eq('id', id);
-
-    if(error){
-      alert('Gagal hapus pesan, coba lagi ya.');
-      return;
-    }
-    await muatAdmin();
-  }catch(e){
-    alert('Gagal hapus pesan, coba lagi ya.');
   }
 }
 
@@ -860,4 +821,3 @@ function escapeHtml(str){
 
 </body>
  </html>
-  
