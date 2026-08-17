@@ -648,7 +648,7 @@ function editSaranMode(id){
   el.innerHTML = '<textarea id="editSaran-' + id + '">' + escapeHtml(original) + '</textarea>' +
     '<div class="ownerBtns">' +
     '<button class="kecilBtn" onclick="simpanEditSaran(\'' + id + '\')">Simpan</button>' +
-    '<button class="kecilBtn hapus" onclick="batalEditSaran(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>' +
+    "<button class='kecilBtn hapus' onclick='batalEditSaran(" + JSON.stringify(id) + ", " + JSON.stringify(original).replace(/'/g, "&#39;") + ")'>Batal</button>" +
     '</div>';
 }
 
@@ -713,7 +713,7 @@ function renderThread(saranId, balasanList){
     return '<div class="thread-item">' + badge +
       '<div class="thread-nama">' + escapeHtml(b.nama) + '</div>' +
       '<div class="thread-isi" id="isiBalasan-' + b.id + '">' + escapeHtml(b.isi) + '</div>' +
-      '<button class="balasKecil" onclick="tampilFormBalas(\'' + saranId + '\', \'' + b.id + '\', ' + JSON.stringify(b.nama) + ')">Balas</button>' +
+      "<button class='balasKecil' onclick='tampilFormBalas(" + JSON.stringify(saranId) + ", " + JSON.stringify(b.id) + ", " + JSON.stringify(b.nama).replace(/'/g, "&#39;") + ")'>Balas</button>" +
       ownerBtns +
       '<div class="formBalasSlot" id="formBalas-' + b.id + '"></div>' +
     '</div>';
@@ -761,7 +761,7 @@ function editBalasanMode(id){
   const original = el.textContent;
   el.innerHTML = '<textarea id="editBalasan-' + id + '">' + escapeHtml(original) + '</textarea>' +
     '<button class="kirimBalasan" onclick="simpanEditBalasan(\'' + id + '\')">Simpan</button>' +
-    '<button class="kirimBalasan" style="background:transparent;border:1px solid #4FAE55;color:#1B3A17;" onclick="batalEditBalasan(\'' + id + '\', ' + JSON.stringify(original) + ')">Batal</button>';
+    "<button class='kirimBalasan' style='background:transparent;border:1px solid #4FAE55;color:#1B3A17;' onclick='batalEditBalasan(" + JSON.stringify(id) + ", " + JSON.stringify(original).replace(/'/g, "&#39;") + ")'>Batal</button>";
 }
 
 function batalEditBalasan(id, original){
