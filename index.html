@@ -720,10 +720,7 @@ function renderThread(saranId, balasanList){
   }).join('');
 
   return '<div class="balasan">' + itemsHtml +
-    '<button class="balasKecil" onclick="tampilFormBalas(\'' + saranId + '\', null, null)">+ Tambah balasan</button>' +
-    '<div class="formBalasSlot" id="formBalas-root-' + saranId + '"></div>' +
   '</div>';
-}
   
 function tampilFormBalas(saranId, replyTo, namaDibales){
   const slotId = replyTo ? 'formBalas-' + replyTo : 'formBalas-root-' + saranId;
